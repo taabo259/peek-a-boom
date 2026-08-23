@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+
 <meta charset="UTF-8">
 
 <meta name="viewport"
@@ -11,17 +12,28 @@
 
 <title>Bomb Defusal</title>
 
+
 <style>
+
+    /* =========================
+       基本設定
+    ========================= */
 
     * {
         box-sizing: border-box;
+
         -webkit-tap-highlight-color: transparent;
     }
 
-    html, body {
+
+    html,
+    body {
+
         margin: 0;
+
         width: 100%;
         height: 100%;
+
         overflow: hidden;
 
         background: #ffffff;
@@ -35,8 +47,11 @@
             sans-serif;
     }
 
+
     body {
+
         display: flex;
+
         justify-content: center;
         align-items: center;
 
@@ -49,15 +64,18 @@
     ========================= */
 
     #game {
+
         width: 100%;
         height: 100%;
 
         position: relative;
 
         display: flex;
+
         flex-direction: column;
 
         align-items: center;
+
         justify-content: center;
 
         background: #ffffff;
@@ -70,15 +88,51 @@
 
     #timer {
 
-        font-size: clamp(70px, 18vw, 180px);
+        /*
+            タイマーの幅を固定
+
+            これによって数字が変わっても
+            タイマー全体の位置が動かない
+        */
+
+        width: 8ch;
+
+        text-align: center;
+
+
+        /*
+            数字をすべて同じ幅にする
+
+            100.00
+            99.99
+            88.88
+            11.11
+
+            のように数字が変化しても
+            横方向にずれない
+        */
+
+        font-variant-numeric: tabular-nums;
+
+        font-feature-settings:
+            "tnum";
+
+
+        font-size:
+            clamp(70px, 18vw, 180px);
 
         font-weight: 300;
 
         line-height: 1;
 
-        letter-spacing: 0.03em;
+        letter-spacing: 0;
 
         margin-bottom: 60px;
+
+        text-align: center;
+
+        white-space: nowrap;
+
 
         transition:
             color 0.2s,
@@ -86,22 +140,30 @@
     }
 
 
-    /* 残り20秒以下 */
+    /* =========================
+       残り20秒以下
+    ========================= */
 
     #timer.warning {
 
-        animation: warningPulse 0.8s infinite;
+        animation:
+            warningPulse 0.8s infinite;
     }
 
 
     @keyframes warningPulse {
 
-        0%, 100% {
-            transform: scale(1);
+        0%,
+        100% {
+
+            transform:
+                scale(1);
         }
 
         50% {
-            transform: scale(1.05);
+
+            transform:
+                scale(1.05);
         }
     }
 
@@ -112,15 +174,18 @@
 
     #answer {
 
-        width: min(75vw, 600px);
+        width:
+            min(75vw, 600px);
 
         height: 70px;
 
         border: none;
 
-        border-bottom: 3px solid #000000;
+        border-bottom:
+            3px solid #000000;
 
-        background: transparent;
+        background:
+            transparent;
 
         font-size: 40px;
 
@@ -130,9 +195,45 @@
 
         border-radius: 0;
 
+
         user-select: text;
 
         -webkit-user-select: text;
+    }
+
+
+    /* =========================
+       右上タップ領域
+    ========================= */
+
+    #controlArea {
+
+        /*
+            右上の透明な操作領域
+
+            ここだけがゲーム開始・
+            リセットに反応する
+        */
+
+        position: absolute;
+
+        top: 0;
+        right: 0;
+
+        width: 120px;
+        height: 120px;
+
+        z-index: 20;
+
+        /*
+            透明なので画面には表示されない
+        */
+
+        background: transparent;
+
+        cursor: pointer;
+
+        touch-action: manipulation;
     }
 
 
@@ -163,7 +264,8 @@
 
     #resultText {
 
-        font-size: clamp(60px, 15vw, 160px);
+        font-size:
+            clamp(60px, 15vw, 160px);
 
         font-weight: 700;
 
@@ -186,7 +288,10 @@
     .success #resultText {
 
         animation:
-            successAnimation 1.5s ease-out forwards;
+            successAnimation
+            1.5s
+            ease-out
+            forwards;
     }
 
 
@@ -228,25 +333,19 @@
 
     .explosion {
 
-        /*
-            以前の激しい明滅を削除
-        */
-
         background: #000000;
 
         color: #ffffff;
     }
 
 
-    /*
-        解除成功と似た、
-        フェード＋拡大演出
-    */
-
     .explosion #resultText {
 
         animation:
-            explosionAnimation 1.5s ease-out forwards;
+            explosionAnimation
+            1.5s
+            ease-out
+            forwards;
     }
 
 
@@ -285,24 +384,6 @@
 
 
     /* =========================
-       ステータス
-    ========================= */
-
-    #status {
-
-        position: absolute;
-
-        bottom: 25px;
-
-        font-size: 14px;
-
-        letter-spacing: 0.15em;
-
-        opacity: 0.5;
-    }
-
-
-    /* =========================
        スマートフォン
     ========================= */
 
@@ -311,7 +392,15 @@
         #timer {
 
             margin-bottom: 50px;
+
+            /*
+                スマートフォンでも
+                固定幅を維持
+            */
+
+            width: 8ch;
         }
+
 
         #answer {
 
@@ -322,11 +411,17 @@
             font-size: 32px;
         }
 
-        #status {
 
-            bottom: 15px;
+        /*
+            スマートフォンでは
+            右上の操作範囲を少し小さくする
+        */
 
-            font-size: 11px;
+        #controlArea {
+
+            width: 100px;
+
+            height: 100px;
         }
     }
 
@@ -337,7 +432,22 @@
 
 <body>
 
+
 <div id="game">
+
+
+    <!--
+        右上の透明な操作エリア
+
+        待機中
+        → タイマー開始
+
+        成功・爆発後
+        → リセット
+    -->
+
+    <div id="controlArea"></div>
+
 
     <!-- タイマー -->
 
@@ -350,17 +460,17 @@
 
     <input
         type="text"
+
         id="answer"
 
         autocomplete="off"
+
         autocorrect="off"
+
         autocapitalize="off"
 
         spellcheck="false"
     >
-
-
-    <div id="status"></div>
 
 
     <!-- 結果画面 -->
@@ -372,6 +482,7 @@
     </div>
 
 </div>
+
 
 
 <script>
@@ -391,47 +502,69 @@
     ========================= */
 
     const timerElement =
-        document.getElementById("timer");
+        document.getElementById(
+            "timer"
+        );
+
 
     const answerElement =
-        document.getElementById("answer");
+        document.getElementById(
+            "answer"
+        );
+
 
     const resultElement =
-        document.getElementById("result");
+        document.getElementById(
+            "result"
+        );
+
 
     const resultTextElement =
-        document.getElementById("resultText");
+        document.getElementById(
+            "resultText"
+        );
 
-    const statusElement =
-        document.getElementById("status");
+
+    const controlArea =
+        document.getElementById(
+            "controlArea"
+        );
 
 
     /* =========================
        状態
     ========================= */
 
-    let timeLeft = START_TIME;
+    let timeLeft =
+        START_TIME;
+
 
     let timer = null;
+
 
     let startTime = null;
 
 
     /*
         waiting
-        → 開始前
+        ↓
+        開始前
 
         running
-        → カウントダウン中
+        ↓
+        カウントダウン中
 
         success
-        → 解除成功
+        ↓
+        解除成功
 
         exploded
-        → 爆発
+        ↓
+        爆発
     */
 
-    let state = "waiting";
+    let state =
+        "waiting";
 
 
     /* =========================
@@ -440,10 +573,9 @@
 
     function updateTimer() {
 
+
         /*
             小数第2位まで表示
-
-            例
 
             100.00
             99.99
@@ -458,10 +590,12 @@
 
 
         /*
-            残り20秒以下で警告
+            残り20秒以下
         */
 
-        if (timeLeft <= 20) {
+        if (
+            timeLeft <= 20
+        ) {
 
             timerElement.classList.add(
                 "warning"
@@ -482,25 +616,29 @@
 
     function startGame() {
 
-        if (state !== "waiting") {
+
+        /*
+            待機中以外は開始しない
+        */
+
+        if (
+            state !== "waiting"
+        ) {
+
             return;
         }
 
 
-        state = "running";
-
-
-        statusElement.textContent = "";
+        state =
+            "running";
 
 
         /*
             開始時刻を記録
-
-            setIntervalのズレを防ぐため、
-            実際の経過時間から残り時間を計算します。
         */
 
-        startTime = performance.now();
+        startTime =
+            performance.now();
 
 
         /*
@@ -514,39 +652,69 @@
             約10msごとに更新
         */
 
-        timer = setInterval(() => {
-
-            const elapsed =
-                (performance.now() - startTime)
-                / 1000;
+        timer =
+            setInterval(
+                () => {
 
 
-            timeLeft =
-                Math.max(
-                    0,
-                    START_TIME - elapsed
-                );
+                    /*
+                        実際の経過時間を計算
+                    */
+
+                    const elapsed =
+                        (
+                            performance.now()
+                            -
+                            startTime
+                        )
+                        /
+                        1000;
 
 
-            updateTimer();
+                    /*
+                        残り時間
+                    */
+
+                    timeLeft =
+                        Math.max(
+                            0,
+
+                            START_TIME
+                            -
+                            elapsed
+                        );
 
 
-            /*
-                0秒になった
-            */
+                    updateTimer();
 
-            if (timeLeft <= 0) {
 
-                clearInterval(timer);
+                    /*
+                        0秒になった
+                    */
 
-                timeLeft = 0;
+                    if (
+                        timeLeft <= 0
+                    ) {
 
-                updateTimer();
+                        clearInterval(
+                            timer
+                        );
 
-                explode();
-            }
 
-        }, 10);
+                        timeLeft =
+                            0;
+
+
+                        updateTimer();
+
+
+                        explode();
+                    }
+
+                },
+
+                10
+            );
     }
 
 
@@ -556,9 +724,19 @@
 
     answerElement.addEventListener(
         "input",
+
         function () {
 
-            if (state !== "running") {
+
+            /*
+                カウントダウン中
+                以外は判定しない
+            */
+
+            if (
+                state !== "running"
+            ) {
+
                 return;
             }
 
@@ -568,13 +746,16 @@
 
 
             /*
-                「だかい」と完全一致
+                正解
             */
 
-            if (answer === ANSWER) {
+            if (
+                answer === ANSWER
+            ) {
 
                 defuse();
             }
+
         }
     );
 
@@ -585,15 +766,22 @@
 
     function defuse() {
 
-        if (state !== "running") {
+
+        if (
+            state !== "running"
+        ) {
+
             return;
         }
 
 
-        state = "success";
+        state =
+            "success";
 
 
-        clearInterval(timer);
+        clearInterval(
+            timer
+        );
 
 
         /*
@@ -602,6 +790,7 @@
 
         resultElement.style.display =
             "flex";
+
 
         resultElement.className =
             "success";
@@ -612,7 +801,8 @@
 
 
         /*
-            入力欄からフォーカスを外す
+            入力欄から
+            フォーカスを外す
         */
 
         answerElement.blur();
@@ -625,12 +815,17 @@
 
     function explode() {
 
-        if (state !== "running") {
+
+        if (
+            state !== "running"
+        ) {
+
             return;
         }
 
 
-        state = "exploded";
+        state =
+            "exploded";
 
 
         /*
@@ -656,19 +851,28 @@
 
     function resetGame() {
 
+
+        /*
+            成功または爆発時だけ
+            リセット可能
+        */
+
         if (
             state !== "success" &&
             state !== "exploded"
         ) {
+
             return;
         }
 
 
-        clearInterval(timer);
+        clearInterval(
+            timer
+        );
 
 
         /*
-            初期状態に戻す
+            初期状態へ
         */
 
         timeLeft =
@@ -684,19 +888,32 @@
 
 
         /*
-            表示を戻す
+            タイマー表示を戻す
         */
 
         updateTimer();
 
 
-        answerElement.value = "";
+        /*
+            入力欄を空にする
+        */
 
+        answerElement.value =
+            "";
+
+
+        /*
+            警告表示を解除
+        */
 
         timerElement.classList.remove(
             "warning"
         );
 
+
+        /*
+            結果画面を消す
+        */
 
         resultElement.style.display =
             "none";
@@ -711,7 +928,7 @@
 
 
         /*
-            入力欄のフォーカスを外す
+            フォーカスを外す
         */
 
         answerElement.blur();
@@ -719,17 +936,39 @@
 
 
     /* =========================
-       画面タッチ
+       右上タップ
     ========================= */
 
-    document.addEventListener(
+    controlArea.addEventListener(
         "pointerdown",
+
         function (event) {
 
-            /*
-                成功・爆発後
 
-                → 画面タッチでリセット
+            /*
+                タップイベントが
+                他の場所に伝わるのを防ぐ
+            */
+
+            event.stopPropagation();
+
+
+            /*
+                開始前なら開始
+            */
+
+            if (
+                state === "waiting"
+            ) {
+
+                startGame();
+
+                return;
+            }
+
+
+            /*
+                成功・爆発後ならリセット
             */
 
             if (
@@ -740,18 +979,6 @@
                 resetGame();
 
                 return;
-            }
-
-
-            /*
-                開始前
-
-                → 画面タッチで開始
-            */
-
-            if (state === "waiting") {
-
-                startGame();
             }
 
         }
@@ -767,4 +994,5 @@
 </script>
 
 </body>
+
 </html>
