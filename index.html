@@ -2,6 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
+
 <meta name="viewport"
       content="width=device-width,
                initial-scale=1.0,
@@ -11,6 +12,7 @@
 <title>Bomb Defusal</title>
 
 <style>
+
     * {
         box-sizing: border-box;
         -webkit-tap-highlight-color: transparent;
@@ -21,8 +23,10 @@
         width: 100%;
         height: 100%;
         overflow: hidden;
+
         background: #ffffff;
         color: #000000;
+
         font-family:
             -apple-system,
             BlinkMacSystemFont,
@@ -35,27 +39,41 @@
         display: flex;
         justify-content: center;
         align-items: center;
+
         user-select: none;
     }
 
-    /* 全体 */
+
+    /* =========================
+       ゲーム画面
+    ========================= */
+
     #game {
         width: 100%;
         height: 100%;
+
         position: relative;
 
         display: flex;
         flex-direction: column;
+
         align-items: center;
         justify-content: center;
 
         background: #ffffff;
     }
 
-    /* タイマー */
+
+    /* =========================
+       タイマー
+    ========================= */
+
     #timer {
-        font-size: clamp(100px, 22vw, 220px);
+
+        font-size: clamp(70px, 18vw, 180px);
+
         font-weight: 300;
+
         line-height: 1;
 
         letter-spacing: 0.03em;
@@ -67,32 +85,45 @@
             transform 0.2s;
     }
 
-    /* 残り時間が少なくなったとき */
+
+    /* 残り20秒以下 */
+
     #timer.warning {
+
         animation: warningPulse 0.8s infinite;
     }
 
+
     @keyframes warningPulse {
+
         0%, 100% {
             transform: scale(1);
         }
 
         50% {
-            transform: scale(1.08);
+            transform: scale(1.05);
         }
     }
 
-    /* 入力欄 */
+
+    /* =========================
+       入力欄
+    ========================= */
+
     #answer {
+
         width: min(75vw, 600px);
+
         height: 70px;
 
         border: none;
+
         border-bottom: 3px solid #000000;
 
         background: transparent;
 
         font-size: 40px;
+
         text-align: center;
 
         outline: none;
@@ -100,11 +131,17 @@
         border-radius: 0;
 
         user-select: text;
+
         -webkit-user-select: text;
     }
 
-    /* 成功・爆発画面 */
+
+    /* =========================
+       結果画面
+    ========================= */
+
     #result {
+
         position: absolute;
 
         top: 0;
@@ -123,134 +160,215 @@
         z-index: 10;
     }
 
+
     #resultText {
+
         font-size: clamp(60px, 15vw, 160px);
+
         font-weight: 700;
+
         letter-spacing: 0.08em;
     }
 
-    /* 成功 */
+
+    /* =========================
+       解除成功
+    ========================= */
+
     .success {
+
         background: #ffffff;
+
         color: #000000;
     }
 
+
     .success #resultText {
-        animation: successAnimation 1.5s ease-out forwards;
+
+        animation:
+            successAnimation 1.5s ease-out forwards;
     }
 
+
     @keyframes successAnimation {
+
         0% {
+
             opacity: 0;
-            transform: scale(0.3);
+
+            transform:
+                scale(0.3);
         }
 
         40% {
+
             opacity: 1;
-            transform: scale(1.2);
+
+            transform:
+                scale(1.2);
         }
 
         70% {
-            transform: scale(0.95);
+
+            transform:
+                scale(0.95);
         }
 
         100% {
-            transform: scale(1);
+
+            transform:
+                scale(1);
         }
     }
 
-    /* 爆発 */
-    .explosion {
-        background: #000000;
-        color: #ffffff;
 
-        animation: explosionFlash 0.25s infinite alternate;
+    /* =========================
+       爆発
+    ========================= */
+
+    .explosion {
+
+        /*
+            以前の激しい明滅を削除
+        */
+
+        background: #000000;
+
+        color: #ffffff;
     }
+
+
+    /*
+        解除成功と似た、
+        フェード＋拡大演出
+    */
 
     .explosion #resultText {
-        animation: explosionText 0.5s ease-out;
+
+        animation:
+            explosionAnimation 1.5s ease-out forwards;
     }
 
-    @keyframes explosionFlash {
-        from {
-            background: #000000;
-        }
 
-        to {
-            background: #ffffff;
-        }
-    }
+    @keyframes explosionAnimation {
 
-    @keyframes explosionText {
         0% {
-            transform: scale(0.1);
+
             opacity: 0;
+
+            transform:
+                scale(0.3);
         }
 
-        50% {
-            transform: scale(1.5);
+        40% {
+
             opacity: 1;
+
+            transform:
+                scale(1.2);
+        }
+
+        70% {
+
+            transform:
+                scale(0.95);
         }
 
         100% {
-            transform: scale(1);
+
             opacity: 1;
+
+            transform:
+                scale(1);
         }
     }
 
-    /* 小さい文字 */
+
+    /* =========================
+       ステータス
+    ========================= */
+
     #status {
+
         position: absolute;
 
         bottom: 25px;
 
         font-size: 14px;
+
         letter-spacing: 0.15em;
 
         opacity: 0.5;
     }
 
-    /* スマートフォン */
+
+    /* =========================
+       スマートフォン
+    ========================= */
+
     @media (max-width: 600px) {
 
         #timer {
+
             margin-bottom: 50px;
         }
 
         #answer {
+
             width: 75vw;
+
             height: 60px;
+
             font-size: 32px;
         }
 
         #status {
+
             bottom: 15px;
+
             font-size: 11px;
         }
     }
+
 </style>
+
 </head>
+
 
 <body>
 
 <div id="game">
 
-    <div id="timer">100</div>
+    <!-- タイマー -->
+
+    <div id="timer">
+        100.00
+    </div>
+
+
+    <!-- 入力欄 -->
 
     <input
         type="text"
         id="answer"
+
         autocomplete="off"
         autocorrect="off"
         autocapitalize="off"
+
         spellcheck="false"
     >
 
+
     <div id="status"></div>
 
+
     <!-- 結果画面 -->
+
     <div id="result">
+
         <div id="resultText"></div>
+
     </div>
 
 </div>
@@ -258,12 +376,14 @@
 
 <script>
 
+
     /* =========================
        設定
     ========================= */
 
     const ANSWER = "だかい";
-    const START_TIME = 100;
+
+    const START_TIME = 100.00;
 
 
     /* =========================
@@ -294,6 +414,9 @@
 
     let timer = null;
 
+    let startTime = null;
+
+
     /*
         waiting
         → 開始前
@@ -317,12 +440,25 @@
 
     function updateTimer() {
 
+        /*
+            小数第2位まで表示
+
+            例
+
+            100.00
+            99.99
+            99.98
+            ...
+            0.01
+            0.00
+        */
+
         timerElement.textContent =
-            timeLeft;
+            timeLeft.toFixed(2);
+
 
         /*
-            残り20秒以下になったら
-            タイマーを強調
+            残り20秒以下で警告
         */
 
         if (timeLeft <= 20) {
@@ -346,17 +482,26 @@
 
     function startGame() {
 
-        /*
-            開始前以外は無視
-        */
-
         if (state !== "waiting") {
             return;
         }
 
+
         state = "running";
 
+
         statusElement.textContent = "";
+
+
+        /*
+            開始時刻を記録
+
+            setIntervalのズレを防ぐため、
+            実際の経過時間から残り時間を計算します。
+        */
+
+        startTime = performance.now();
+
 
         /*
             入力欄にフォーカス
@@ -364,15 +509,27 @@
 
         answerElement.focus();
 
+
         /*
-            1秒ごとにカウントダウン
+            約10msごとに更新
         */
 
         timer = setInterval(() => {
 
-            timeLeft--;
+            const elapsed =
+                (performance.now() - startTime)
+                / 1000;
+
+
+            timeLeft =
+                Math.max(
+                    0,
+                    START_TIME - elapsed
+                );
+
 
             updateTimer();
+
 
             /*
                 0秒になった
@@ -382,10 +539,14 @@
 
                 clearInterval(timer);
 
+                timeLeft = 0;
+
+                updateTimer();
+
                 explode();
             }
 
-        }, 1000);
+        }, 10);
     }
 
 
@@ -397,23 +558,17 @@
         "input",
         function () {
 
-            /*
-                カウントダウン中だけ判定
-            */
-
             if (state !== "running") {
                 return;
             }
 
-            /*
-                入力された文字
-            */
 
             const answer =
                 answerElement.value.trim();
 
+
             /*
-                正解
+                「だかい」と完全一致
             */
 
             if (answer === ANSWER) {
@@ -434,9 +589,12 @@
             return;
         }
 
+
         state = "success";
 
+
         clearInterval(timer);
+
 
         /*
             成功画面
@@ -448,11 +606,13 @@
         resultElement.className =
             "success";
 
+
         resultTextElement.textContent =
             "解除成功";
 
+
         /*
-            入力欄を隠す
+            入力欄からフォーカスを外す
         */
 
         answerElement.blur();
@@ -469,7 +629,9 @@
             return;
         }
 
+
         state = "exploded";
+
 
         /*
             爆発画面
@@ -478,8 +640,10 @@
         resultElement.style.display =
             "flex";
 
+
         resultElement.className =
             "explosion";
+
 
         resultTextElement.textContent =
             "爆発";
@@ -492,11 +656,6 @@
 
     function resetGame() {
 
-        /*
-            成功・爆発状態以外は
-            リセットしない
-        */
-
         if (
             state !== "success" &&
             state !== "exploded"
@@ -504,19 +663,25 @@
             return;
         }
 
-        /*
-            タイマー停止
-        */
 
         clearInterval(timer);
 
+
         /*
-            初期状態へ
+            初期状態に戻す
         */
 
-        timeLeft = START_TIME;
+        timeLeft =
+            START_TIME;
 
-        state = "waiting";
+
+        state =
+            "waiting";
+
+
+        startTime =
+            null;
+
 
         /*
             表示を戻す
@@ -524,24 +689,31 @@
 
         updateTimer();
 
+
         answerElement.value = "";
 
-        answerElement.classList.remove(
+
+        timerElement.classList.remove(
             "warning"
         );
+
 
         resultElement.style.display =
             "none";
 
-        resultElement.className = "";
 
-        resultTextElement.textContent = "";
+        resultElement.className =
+            "";
+
+
+        resultTextElement.textContent =
+            "";
+
 
         /*
-            入力欄を再表示
+            入力欄のフォーカスを外す
         */
 
-        answerElement.focus();
         answerElement.blur();
     }
 
@@ -555,7 +727,9 @@
         function (event) {
 
             /*
-                結果画面ならリセット
+                成功・爆発後
+
+                → 画面タッチでリセット
             */
 
             if (
@@ -568,15 +742,18 @@
                 return;
             }
 
+
             /*
-                入力欄を直接タッチした場合は
-                ゲーム開始だけ行う
+                開始前
+
+                → 画面タッチで開始
             */
 
             if (state === "waiting") {
 
                 startGame();
             }
+
         }
     );
 
