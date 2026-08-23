@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width,
+               initial-scale=1.0,
+               maximum-scale=1.0,
+               user-scalable=no">
+
+<title>Bomb Defusal</title>
+
+<style>
+    * {
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #ffffff;
+        color: #000000;
+        font-family:
+            -apple-system,
+            BlinkMacSystemFont,
+            "Helvetica Neue",
+            Arial,
+            sans-serif;
+    }
+
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        user-select: none;
+    }
+
+    /* 全体 */
+    #game {
+        width: 100%;
+        height: 100%;
+        position: relative;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+
+        background: #ffffff;
+    }
+
+    /* タイマー */
+    #timer {
+        font-size: clamp(100px, 22vw, 220px);
+        font-weight: 300;
+        line-height: 1;
+
+        letter-spacing: 0.03em;
+
+        margin-bottom: 60px;
+
+        transition:
+            color 0.2s,
+            transform 0.2s;
+    }
+
+    /* 残り時間が少なくなったとき */
+    #timer.warning {
+        animation: warningPulse 0.8s infinite;
+    }
+
+    @keyframes warningPulse {
+        0%, 100% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.08);
+        }
+    }
+
+    /* 入力欄 */
+    #answer {
+        width: min(75vw, 600px);
+        height: 70px;
+
+        border: none;
+        border-bottom: 3px solid #000000;
+
+        background: transparent;
+
+        font-size: 40px;
+        text-align: center;
+
+        outline: none;
+
+        border-radius: 0;
+
+        user-select: text;
+        -webkit-user-select: text;
+    }
+
+    /* 成功・爆発画面 */
+    #result {
+        position: absolute;
+
+        top: 0;
+        left: 0;
+
+        width: 100%;
+        height: 100%;
+
+        display: none;
+
+        justify-content: center;
+        align-items: center;
+
+        text-align: center;
+
+        z-index: 10;
+    }
+
+    #resultText {
+        font-size: clamp(60px, 15vw, 160px);
+        font-weight: 700;
+        letter-spacing: 0.08em;
+    }
+
+    /* 成功 */
+    .success {
+        background: #ffffff;
+        color: #000000;
+    }
+
+    .success #resultText {
+        animation: successAnimation 1.5s ease-out forwards;
+    }
+
+    @keyframes successAnimation {
+        0% {
+            opacity: 0;
+            transform: scale(0.3);
+        }
+
+        40% {
+            opacity: 1;
+            transform: scale(1.2);
+        }
+
+        70% {
+            transform: scale(0.95);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    /* 爆発 */
+    .explosion {
+        background: #000000;
+        color: #ffffff;
+
+        animation: explosionFlash 0.25s infinite alternate;
+    }
+
+    .explosion #resultText {
+        animation: explosionText 0.5s ease-out;
+    }
+
+    @keyframes explosionFlash {
+        from {
+            background: #000000;
+        }
+
+        to {
+            background: #ffffff;
+        }
+    }
+
+    @keyframes explosionText {
+        0% {
+            transform: scale(0.1);
+            opacity: 0;
+        }
+
+        50% {
+            transform: scale(1.5);
+            opacity: 1;
+        }
+
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    /* 小さい文字 */
+    #status {
+        position: absolute;
+
+        bottom: 25px;
+
+        font-size: 14px;
+        letter-spacing: 0.15em;
+
+        opacity: 0.5;
+    }
+
+    /* スマートフォン */
+    @media (max-width: 600px) {
+
+        #timer {
+            margin-bottom: 50px;
+        }
+
+        #answer {
+            width: 75vw;
+            height: 60px;
+            font-size: 32px;
+        }
+
+        #status {
+            bottom: 15px;
+            font-size: 11px;
+        }
+    }
+</style>
+</head>
+
+<body>
+
+<div id="game">
+
+    <div id="timer">100</div>
+
+    <input
+        type="text"
+        id="answer"
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="off"
+        spellcheck="false"
+    >
+
+    <div id="status"></div>
+
+    <!-- 結果画面 -->
+    <div id="result">
+        <div id="resultText"></div>
+    </div>
+
+</div>
+
+
+<script>
+
+    /* =========================
+       設定
+    ========================= */
+
+    const ANSWER = "だかい";
+    const START_TIME = 100;
+
+
+    /* =========================
+       HTML要素
+    ========================= */
+
+    const timerElement =
+        document.getElementById("timer");
+
+    const answerElement =
+        document.getElementById("answer");
+
+    const resultElement =
+        document.getElementById("result");
+
+    const resultTextElement =
+        document.getElementById("resultText");
+
+    const statusElement =
+        document.getElementById("status");
+
+
+    /* =========================
+       状態
+    ========================= */
+
+    let timeLeft = START_TIME;
+
+    let timer = null;
+
+    /*
+        waiting
+        → 開始前
+
+        running
+        → カウントダウン中
+
+        success
+        → 解除成功
+
+        exploded
+        → 爆発
+    */
+
+    let state = "waiting";
+
+
+    /* =========================
+       タイマー表示
+    ========================= */
+
+    function updateTimer() {
+
+        timerElement.textContent =
+            timeLeft;
+
+        /*
+            残り20秒以下になったら
+            タイマーを強調
+        */
+
+        if (timeLeft <= 20) {
+
+            timerElement.classList.add(
+                "warning"
+            );
+
+        } else {
+
+            timerElement.classList.remove(
+                "warning"
+            );
+        }
+    }
+
+
+    /* =========================
+       ゲーム開始
+    ========================= */
+
+    function startGame() {
+
+        /*
+            開始前以外は無視
+        */
+
+        if (state !== "waiting") {
+            return;
+        }
+
+        state = "running";
+
+        statusElement.textContent = "";
+
+        /*
+            入力欄にフォーカス
+        */
+
+        answerElement.focus();
+
+        /*
+            1秒ごとにカウントダウン
+        */
+
+        timer = setInterval(() => {
+
+            timeLeft--;
+
+            updateTimer();
+
+            /*
+                0秒になった
+            */
+
+            if (timeLeft <= 0) {
+
+                clearInterval(timer);
+
+                explode();
+            }
+
+        }, 1000);
+    }
+
+
+    /* =========================
+       正解判定
+    ========================= */
+
+    answerElement.addEventListener(
+        "input",
+        function () {
+
+            /*
+                カウントダウン中だけ判定
+            */
+
+            if (state !== "running") {
+                return;
+            }
+
+            /*
+                入力された文字
+            */
+
+            const answer =
+                answerElement.value.trim();
+
+            /*
+                正解
+            */
+
+            if (answer === ANSWER) {
+
+                defuse();
+            }
+        }
+    );
+
+
+    /* =========================
+       解除成功
+    ========================= */
+
+    function defuse() {
+
+        if (state !== "running") {
+            return;
+        }
+
+        state = "success";
+
+        clearInterval(timer);
+
+        /*
+            成功画面
+        */
+
+        resultElement.style.display =
+            "flex";
+
+        resultElement.className =
+            "success";
+
+        resultTextElement.textContent =
+            "解除成功";
+
+        /*
+            入力欄を隠す
+        */
+
+        answerElement.blur();
+    }
+
+
+    /* =========================
+       爆発
+    ========================= */
+
+    function explode() {
+
+        if (state !== "running") {
+            return;
+        }
+
+        state = "exploded";
+
+        /*
+            爆発画面
+        */
+
+        resultElement.style.display =
+            "flex";
+
+        resultElement.className =
+            "explosion";
+
+        resultTextElement.textContent =
+            "爆発";
+    }
+
+
+    /* =========================
+       リセット
+    ========================= */
+
+    function resetGame() {
+
+        /*
+            成功・爆発状態以外は
+            リセットしない
+        */
+
+        if (
+            state !== "success" &&
+            state !== "exploded"
+        ) {
+            return;
+        }
+
+        /*
+            タイマー停止
+        */
+
+        clearInterval(timer);
+
+        /*
+            初期状態へ
+        */
+
+        timeLeft = START_TIME;
+
+        state = "waiting";
+
+        /*
+            表示を戻す
+        */
+
+        updateTimer();
+
+        answerElement.value = "";
+
+        answerElement.classList.remove(
+            "warning"
+        );
+
+        resultElement.style.display =
+            "none";
+
+        resultElement.className = "";
+
+        resultTextElement.textContent = "";
+
+        /*
+            入力欄を再表示
+        */
+
+        answerElement.focus();
+        answerElement.blur();
+    }
+
+
+    /* =========================
+       画面タッチ
+    ========================= */
+
+    document.addEventListener(
+        "pointerdown",
+        function (event) {
+
+            /*
+                結果画面ならリセット
+            */
+
+            if (
+                state === "success" ||
+                state === "exploded"
+            ) {
+
+                resetGame();
+
+                return;
+            }
+
+            /*
+                入力欄を直接タッチした場合は
+                ゲーム開始だけ行う
+            */
+
+            if (state === "waiting") {
+
+                startGame();
+            }
+        }
+    );
+
+
+    /* =========================
+       初期化
+    ========================= */
+
+    updateTimer();
+
+</script>
+
+</body>
+</html>
