@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
 
 <meta charset="UTF-8">
@@ -15,415 +16,612 @@
 
 <style>
 
-    /* =========================
-       基本設定
-    ========================= */
+/* =========================================
+   基本設定
+========================================= */
 
-    * {
-        box-sizing: border-box;
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
 
-        -webkit-tap-highlight-color: transparent;
+
+html,
+body {
+
+    margin: 0;
+
+    width: 100%;
+    height: 100%;
+
+    overflow: hidden;
+
+    background: #ffffff;
+    color: #000000;
+
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Helvetica Neue",
+        Arial,
+        sans-serif;
+}
+
+
+body {
+
+    display: flex;
+
+    justify-content: center;
+    align-items: center;
+
+    user-select: none;
+}
+
+
+/* =========================================
+   ゲーム画面
+========================================= */
+
+#game {
+
+    width: 100%;
+    height: 100%;
+
+    position: relative;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background: #ffffff;
+
+    overflow: hidden;
+}
+
+
+/* =========================================
+   タイマー
+========================================= */
+
+#timer {
+
+    /*
+        タイマー全体の幅を固定
+        → 数字の横ズレを防ぐ
+    */
+
+    width: 8ch;
+
+    text-align: center;
+
+
+    /*
+        数字を等幅にする
+    */
+
+    font-variant-numeric: tabular-nums;
+
+    font-feature-settings: "tnum";
+
+
+    font-size:
+        clamp(70px, 18vw, 180px);
+
+    font-weight: 300;
+
+    line-height: 1;
+
+    letter-spacing: 0;
+
+    margin-bottom: 60px;
+
+    white-space: nowrap;
+
+    transition:
+        color 0.2s,
+        transform 0.2s;
+}
+
+
+/* =========================================
+   残り時間警告
+========================================= */
+
+#timer.warning {
+
+    animation:
+        warningPulse 0.8s infinite;
+}
+
+
+@keyframes warningPulse {
+
+    0%,
+    100% {
+
+        transform: scale(1);
     }
 
+    50% {
 
-    html,
-    body {
+        transform: scale(1.05);
+    }
+}
 
-        margin: 0;
 
-        width: 100%;
-        height: 100%;
+/* =========================================
+   入力欄
+========================================= */
 
-        overflow: hidden;
+#answer {
 
-        background: #ffffff;
-        color: #000000;
+    width:
+        min(75vw, 600px);
 
-        font-family:
-            -apple-system,
-            BlinkMacSystemFont,
-            "Helvetica Neue",
-            Arial,
-            sans-serif;
+    height: 70px;
+
+    border: none;
+
+    border-bottom:
+        3px solid #000000;
+
+    background:
+        transparent;
+
+    font-size: 40px;
+
+    text-align: center;
+
+    outline: none;
+
+    border-radius: 0;
+
+    user-select: text;
+
+    -webkit-user-select: text;
+}
+
+
+/* =========================================
+   右上の操作領域
+========================================= */
+
+#controlArea {
+
+    /*
+        右上だけをタップ可能にする
+    */
+
+    position: absolute;
+
+    top: 0;
+    right: 0;
+
+    width: 120px;
+    height: 120px;
+
+    z-index: 50;
+
+    background: transparent;
+
+    cursor: pointer;
+
+    touch-action: manipulation;
+}
+
+
+/* =========================================
+   結果画面
+========================================= */
+
+#result {
+
+    position: absolute;
+
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+
+    display: none;
+
+    justify-content: center;
+    align-items: center;
+
+    text-align: center;
+
+    z-index: 20;
+
+    overflow: hidden;
+}
+
+
+/* =========================================
+   結果文字
+========================================= */
+
+#resultText {
+
+    position: relative;
+
+    z-index: 30;
+
+    font-size:
+        clamp(48px, 13vw, 150px);
+
+    font-weight: 700;
+
+    letter-spacing: 0.08em;
+
+    opacity: 0;
+}
+
+
+/* =========================================
+   最終結果文字
+========================================= */
+
+#finalMessage {
+
+    position: absolute;
+
+    z-index: 40;
+
+    font-size:
+        clamp(38px, 9vw, 100px);
+
+    font-weight: 700;
+
+    letter-spacing: 0.08em;
+
+    opacity: 0;
+
+    transform: scale(0.7);
+}
+
+
+/* =========================================
+   解除成功画面
+========================================= */
+
+.success {
+
+    background:
+        radial-gradient(
+            circle,
+            #ffffff 0%,
+            #e8f8ff 35%,
+            #b7ecff 100%
+        );
+
+    color: #0066cc;
+}
+
+
+/* =========================================
+   成功時の光
+========================================= */
+
+.success::before {
+
+    content: "";
+
+    position: absolute;
+
+    width: 20px;
+    height: 20px;
+
+    border-radius: 50%;
+
+    background: #ffffff;
+
+    box-shadow:
+        0 0 30px #ffffff,
+        0 0 70px #00aaff,
+        0 0 120px #00ddff;
+
+    animation:
+        successBurst 1.4s ease-out forwards;
+}
+
+
+@keyframes successBurst {
+
+    0% {
+
+        width: 20px;
+        height: 20px;
+
+        opacity: 1;
+
+        transform: scale(1);
     }
 
+    100% {
 
-    body {
+        width: 100vmax;
+        height: 100vmax;
 
-        display: flex;
+        opacity: 0;
 
-        justify-content: center;
-        align-items: center;
+        transform: scale(1);
+    }
+}
 
-        user-select: none;
+
+/* =========================================
+   成功文字
+========================================= */
+
+.success #resultText {
+
+    animation:
+        successText 1.2s
+        cubic-bezier(0.2, 0.8, 0.2, 1)
+        forwards;
+}
+
+
+@keyframes successText {
+
+    0% {
+
+        opacity: 0;
+
+        transform:
+            scale(0.2)
+            rotate(-8deg);
     }
 
+    50% {
 
-    /* =========================
-       ゲーム画面
-    ========================= */
+        opacity: 1;
 
-    #game {
-
-        width: 100%;
-        height: 100%;
-
-        position: relative;
-
-        display: flex;
-
-        flex-direction: column;
-
-        align-items: center;
-
-        justify-content: center;
-
-        background: #ffffff;
+        transform:
+            scale(1.25)
+            rotate(2deg);
     }
 
+    75% {
 
-    /* =========================
-       タイマー
-    ========================= */
+        transform:
+            scale(0.92)
+            rotate(0deg);
+    }
+
+    100% {
+
+        opacity: 1;
+
+        transform:
+            scale(1)
+            rotate(0deg);
+    }
+}
+
+
+/* =========================================
+   成功時の光の粒
+========================================= */
+
+.success .spark {
+
+    position: absolute;
+
+    width: 8px;
+    height: 8px;
+
+    border-radius: 50%;
+
+    background: #00aaff;
+
+    animation:
+        sparkAnimation 1.5s
+        ease-out forwards;
+}
+
+
+@keyframes sparkAnimation {
+
+    0% {
+
+        opacity: 1;
+
+        transform:
+            translate(0, 0)
+            scale(1);
+    }
+
+    100% {
+
+        opacity: 0;
+
+        transform:
+            translate(
+                var(--x),
+                var(--y)
+            )
+            scale(0);
+    }
+}
+
+
+/* =========================================
+   爆発画面
+========================================= */
+
+.explosion {
+
+    background: #000000;
+
+    color: #ffffff;
+}
+
+
+/* =========================================
+   爆発の光
+========================================= */
+
+.explosion::before {
+
+    content: "";
+
+    position: absolute;
+
+    width: 30px;
+    height: 30px;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            #ffffff 0%,
+            #ffff66 15%,
+            #ff9900 35%,
+            #ff3300 60%,
+            transparent 72%
+        );
+
+    box-shadow:
+        0 0 30px #ffffff,
+        0 0 80px #ff9900,
+        0 0 150px #ff3300;
+
+    animation:
+        explosionBurst 1.1s
+        ease-out forwards;
+}
+
+
+@keyframes explosionBurst {
+
+    0% {
+
+        width: 30px;
+        height: 30px;
+
+        opacity: 1;
+
+        transform: scale(1);
+    }
+
+    25% {
+
+        width: 180px;
+        height: 180px;
+
+        opacity: 1;
+
+        transform: scale(1.5);
+    }
+
+    100% {
+
+        width: 100vmax;
+        height: 100vmax;
+
+        opacity: 0;
+
+        transform: scale(1);
+    }
+}
+
+
+/* =========================================
+   爆発時の画面揺れ
+========================================= */
+
+.explosion.shake {
+
+    animation:
+        screenShake
+        0.6s
+        ease-out;
+}
+
+
+@keyframes screenShake {
+
+    0% {
+        transform: translate(0, 0);
+    }
+
+    10% {
+        transform: translate(-12px, 8px);
+    }
+
+    20% {
+        transform: translate(10px, -10px);
+    }
+
+    30% {
+        transform: translate(-8px, -6px);
+    }
+
+    40% {
+        transform: translate(8px, 8px);
+    }
+
+    50% {
+        transform: translate(-5px, -5px);
+    }
+
+    60% {
+        transform: translate(5px, 4px);
+    }
+
+    70% {
+        transform: translate(-3px, 2px);
+    }
+
+    80% {
+        transform: translate(2px, -2px);
+    }
+
+    100% {
+        transform: translate(0, 0);
+    }
+}
+
+
+/* =========================================
+   スマートフォン
+========================================= */
+
+@media (max-width: 600px) {
 
     #timer {
 
-        /*
-            タイマーの幅を固定
-
-            これによって数字が変わっても
-            タイマー全体の位置が動かない
-        */
+        margin-bottom: 50px;
 
         width: 8ch;
-
-        text-align: center;
-
-
-        /*
-            数字をすべて同じ幅にする
-
-            100.00
-            99.99
-            88.88
-            11.11
-
-            のように数字が変化しても
-            横方向にずれない
-        */
-
-        font-variant-numeric: tabular-nums;
-
-        font-feature-settings:
-            "tnum";
-
-
-        font-size:
-            clamp(70px, 18vw, 180px);
-
-        font-weight: 300;
-
-        line-height: 1;
-
-        letter-spacing: 0;
-
-        margin-bottom: 60px;
-
-        text-align: center;
-
-        white-space: nowrap;
-
-
-        transition:
-            color 0.2s,
-            transform 0.2s;
     }
 
-
-    /* =========================
-       残り20秒以下
-    ========================= */
-
-    #timer.warning {
-
-        animation:
-            warningPulse 0.8s infinite;
-    }
-
-
-    @keyframes warningPulse {
-
-        0%,
-        100% {
-
-            transform:
-                scale(1);
-        }
-
-        50% {
-
-            transform:
-                scale(1.05);
-        }
-    }
-
-
-    /* =========================
-       入力欄
-    ========================= */
 
     #answer {
 
-        width:
-            min(75vw, 600px);
+        width: 75vw;
 
-        height: 70px;
+        height: 60px;
 
-        border: none;
-
-        border-bottom:
-            3px solid #000000;
-
-        background:
-            transparent;
-
-        font-size: 40px;
-
-        text-align: center;
-
-        outline: none;
-
-        border-radius: 0;
-
-
-        user-select: text;
-
-        -webkit-user-select: text;
+        font-size: 32px;
     }
 
-
-    /* =========================
-       右上タップ領域
-    ========================= */
 
     #controlArea {
 
-        /*
-            右上の透明な操作領域
+        width: 100px;
 
-            ここだけがゲーム開始・
-            リセットに反応する
-        */
-
-        position: absolute;
-
-        top: 0;
-        right: 0;
-
-        width: 120px;
-        height: 120px;
-
-        z-index: 20;
-
-        /*
-            透明なので画面には表示されない
-        */
-
-        background: transparent;
-
-        cursor: pointer;
-
-        touch-action: manipulation;
+        height: 100px;
     }
-
-
-    /* =========================
-       結果画面
-    ========================= */
-
-    #result {
-
-        position: absolute;
-
-        top: 0;
-        left: 0;
-
-        width: 100%;
-        height: 100%;
-
-        display: none;
-
-        justify-content: center;
-        align-items: center;
-
-        text-align: center;
-
-        z-index: 10;
-    }
-
-
-    #resultText {
-
-        font-size:
-            clamp(60px, 15vw, 160px);
-
-        font-weight: 700;
-
-        letter-spacing: 0.08em;
-    }
-
-
-    /* =========================
-       解除成功
-    ========================= */
-
-    .success {
-
-        background: #ffffff;
-
-        color: #000000;
-    }
-
-
-    .success #resultText {
-
-        animation:
-            successAnimation
-            1.5s
-            ease-out
-            forwards;
-    }
-
-
-    @keyframes successAnimation {
-
-        0% {
-
-            opacity: 0;
-
-            transform:
-                scale(0.3);
-        }
-
-        40% {
-
-            opacity: 1;
-
-            transform:
-                scale(1.2);
-        }
-
-        70% {
-
-            transform:
-                scale(0.95);
-        }
-
-        100% {
-
-            transform:
-                scale(1);
-        }
-    }
-
-
-    /* =========================
-       爆発
-    ========================= */
-
-    .explosion {
-
-        background: #000000;
-
-        color: #ffffff;
-    }
-
-
-    .explosion #resultText {
-
-        animation:
-            explosionAnimation
-            1.5s
-            ease-out
-            forwards;
-    }
-
-
-    @keyframes explosionAnimation {
-
-        0% {
-
-            opacity: 0;
-
-            transform:
-                scale(0.3);
-        }
-
-        40% {
-
-            opacity: 1;
-
-            transform:
-                scale(1.2);
-        }
-
-        70% {
-
-            transform:
-                scale(0.95);
-        }
-
-        100% {
-
-            opacity: 1;
-
-            transform:
-                scale(1);
-        }
-    }
-
-
-    /* =========================
-       スマートフォン
-    ========================= */
-
-    @media (max-width: 600px) {
-
-        #timer {
-
-            margin-bottom: 50px;
-
-            /*
-                スマートフォンでも
-                固定幅を維持
-            */
-
-            width: 8ch;
-        }
-
-
-        #answer {
-
-            width: 75vw;
-
-            height: 60px;
-
-            font-size: 32px;
-        }
-
-
-        /*
-            スマートフォンでは
-            右上の操作範囲を少し小さくする
-        */
-
-        #controlArea {
-
-            width: 100px;
-
-            height: 100px;
-        }
-    }
+}
 
 </style>
 
@@ -437,10 +635,10 @@
 
 
     <!--
-        右上の透明な操作エリア
+        右上の透明な操作領域
 
         待機中
-        → タイマー開始
+        → スタート
 
         成功・爆発後
         → リセット
@@ -460,13 +658,10 @@
 
     <input
         type="text"
-
         id="answer"
 
         autocomplete="off"
-
         autocorrect="off"
-
         autocapitalize="off"
 
         spellcheck="false"
@@ -479,7 +674,10 @@
 
         <div id="resultText"></div>
 
+        <div id="finalMessage"></div>
+
     </div>
+
 
 </div>
 
@@ -488,250 +686,287 @@
 <script>
 
 
-    /* =========================
-       設定
-    ========================= */
+/* =========================================
+   設定
+========================================= */
 
-    const ANSWER = "だかい";
+const ANSWER = "だかい";
 
-    const START_TIME = 100.00;
-
-
-    /* =========================
-       HTML要素
-    ========================= */
-
-    const timerElement =
-        document.getElementById(
-            "timer"
-        );
+const START_TIME = 100.00;
 
 
-    const answerElement =
-        document.getElementById(
-            "answer"
-        );
+/* =========================================
+   HTML要素
+========================================= */
+
+const game =
+    document.getElementById("game");
 
 
-    const resultElement =
-        document.getElementById(
-            "result"
-        );
+const timerElement =
+    document.getElementById("timer");
 
 
-    const resultTextElement =
-        document.getElementById(
-            "resultText"
-        );
+const answerElement =
+    document.getElementById("answer");
 
 
-    const controlArea =
-        document.getElementById(
-            "controlArea"
-        );
+const resultElement =
+    document.getElementById("result");
 
 
-    /* =========================
-       状態
-    ========================= */
-
-    let timeLeft =
-        START_TIME;
+const resultTextElement =
+    document.getElementById("resultText");
 
 
-    let timer = null;
+const finalMessageElement =
+    document.getElementById("finalMessage");
 
 
-    let startTime = null;
+const controlArea =
+    document.getElementById("controlArea");
+
+
+/* =========================================
+   状態
+========================================= */
+
+let timeLeft =
+    START_TIME;
+
+
+let timer = null;
+
+let startTime = null;
+
+
+let state = "waiting";
+
+
+/*
+    waiting
+    ↓
+    開始前
+
+    running
+    ↓
+    カウントダウン
+
+    success
+    ↓
+    解除成功
+
+    exploded
+    ↓
+    爆発
+*/
+
+
+/* =========================================
+   Audio
+========================================= */
+
+let audioContext = null;
+
+let countdownInterval = null;
+
+let audioStarted = false;
+
+
+/* =========================================
+   Audio初期化
+========================================= */
+
+function initAudio() {
+
+    if (!audioContext) {
+
+        audioContext =
+            new (
+                window.AudioContext ||
+                window.webkitAudioContext
+            )();
+    }
+
+
+    if (
+        audioContext.state === "suspended"
+    ) {
+
+        audioContext.resume();
+    }
+
+
+    audioStarted = true;
+}
+
+
+/* =========================================
+   機械的なカウントダウン音
+========================================= */
+
+function playMechanicalBeep(
+    frequency,
+    duration = 0.12
+) {
+
+    if (!audioContext) {
+
+        return;
+    }
+
+
+    const now =
+        audioContext.currentTime;
 
 
     /*
-        waiting
-        ↓
-        開始前
-
-        running
-        ↓
-        カウントダウン中
-
-        success
-        ↓
-        解除成功
-
-        exploded
-        ↓
-        爆発
+        =====================================
+        メインの電子音
+        =====================================
     */
 
-    let state =
-        "waiting";
+    const oscillator =
+        audioContext.createOscillator();
 
 
-    /* =========================
-       タイマー表示
-    ========================= */
-
-    function updateTimer() {
+    const gain =
+        audioContext.createGain();
 
 
-        /*
-            小数第2位まで表示
+    /*
+        square波
+        → 機械的な音
+    */
 
-            100.00
-            99.99
-            99.98
-            ...
-            0.01
-            0.00
-        */
-
-        timerElement.textContent =
-            timeLeft.toFixed(2);
+    oscillator.type =
+        "square";
 
 
-        /*
-            残り20秒以下
-        */
-
-        if (
-            timeLeft <= 20
-        ) {
-
-            timerElement.classList.add(
-                "warning"
-            );
-
-        } else {
-
-            timerElement.classList.remove(
-                "warning"
-            );
-        }
-    }
+    oscillator.frequency.setValueAtTime(
+        frequency,
+        now
+    );
 
 
-    /* =========================
-       ゲーム開始
-    ========================= */
+    /*
+        音量を一瞬で立ち上げる
+    */
 
-    function startGame() {
-
-
-        /*
-            待機中以外は開始しない
-        */
-
-        if (
-            state !== "waiting"
-        ) {
-
-            return;
-        }
+    gain.gain.setValueAtTime(
+        0.0001,
+        now
+    );
 
 
-        state =
-            "running";
+    gain.gain.exponentialRampToValueAtTime(
+        0.12,
+        now + 0.005
+    );
 
 
-        /*
-            開始時刻を記録
-        */
-
-        startTime =
-            performance.now();
+    gain.gain.exponentialRampToValueAtTime(
+        0.0001,
+        now + duration
+    );
 
 
-        /*
-            入力欄にフォーカス
-        */
+    oscillator.connect(gain);
 
-        answerElement.focus();
-
-
-        /*
-            約10msごとに更新
-        */
-
-        timer =
-            setInterval(
-                () => {
+    gain.connect(
+        audioContext.destination
+    );
 
 
-                    /*
-                        実際の経過時間を計算
-                    */
+    oscillator.start(now);
 
-                    const elapsed =
-                        (
-                            performance.now()
-                            -
-                            startTime
-                        )
-                        /
-                        1000;
+    oscillator.stop(
+        now + duration
+    );
 
 
-                    /*
-                        残り時間
-                    */
+    /*
+        =====================================
+        高周波の電子クリック
+        =====================================
+    */
 
-                    timeLeft =
-                        Math.max(
-                            0,
-
-                            START_TIME
-                            -
-                            elapsed
-                        );
+    const click =
+        audioContext.createOscillator();
 
 
-                    updateTimer();
+    const clickGain =
+        audioContext.createGain();
 
 
-                    /*
-                        0秒になった
-                    */
-
-                    if (
-                        timeLeft <= 0
-                    ) {
-
-                        clearInterval(
-                            timer
-                        );
+    click.type =
+        "square";
 
 
-                        timeLeft =
-                            0;
+    click.frequency.setValueAtTime(
+        frequency * 2.5,
+        now
+    );
 
 
-                        updateTimer();
+    clickGain.gain.setValueAtTime(
+        0.0001,
+        now
+    );
 
 
-                        explode();
-                    }
-
-                },
-
-                10
-            );
-    }
+    clickGain.gain.exponentialRampToValueAtTime(
+        0.035,
+        now + 0.003
+    );
 
 
-    /* =========================
-       正解判定
-    ========================= */
-
-    answerElement.addEventListener(
-        "input",
-
-        function () {
+    clickGain.gain.exponentialRampToValueAtTime(
+        0.0001,
+        now + 0.045
+    );
 
 
-            /*
-                カウントダウン中
-                以外は判定しない
-            */
+    click.connect(clickGain);
+
+    clickGain.connect(
+        audioContext.destination
+    );
+
+
+    click.start(now);
+
+    click.stop(
+        now + 0.05
+    );
+}
+
+
+/* =========================================
+   カウントダウン音開始
+========================================= */
+
+function startCountdownSound() {
+
+    stopCountdownSound();
+
+
+    /*
+        開始直後
+    */
+
+    playMechanicalBeep(
+        450,
+        0.10
+    );
+
+
+    /*
+        1秒ごとのカウントダウン
+    */
+
+    countdownInterval =
+        setInterval(() => {
 
             if (
                 state !== "running"
@@ -741,257 +976,1093 @@
             }
 
 
-            const answer =
-                answerElement.value.trim();
-
-
             /*
-                正解
+                =================================
+                残り5秒以下
+                =================================
+
+                高音＋追加音
             */
 
             if (
-                answer === ANSWER
+                timeLeft <= 5
             ) {
 
-                defuse();
+                playMechanicalBeep(
+                    950,
+                    0.09
+                );
+
+
+                /*
+                    0.25秒後に
+                    2つ目の電子音
+                */
+
+                setTimeout(() => {
+
+                    if (
+                        state === "running" &&
+                        timeLeft > 0
+                    ) {
+
+                        playMechanicalBeep(
+                            1250,
+                            0.055
+                        );
+                    }
+
+                }, 250);
+
             }
 
-        }
+
+            /*
+                =================================
+                残り10秒以下
+                =================================
+            */
+
+            else if (
+                timeLeft <= 10
+            ) {
+
+                playMechanicalBeep(
+                    750,
+                    0.10
+                );
+
+            }
+
+
+            /*
+                =================================
+                残り20秒以下
+                =================================
+            */
+
+            else if (
+                timeLeft <= 20
+            ) {
+
+                playMechanicalBeep(
+                    600,
+                    0.11
+                );
+
+            }
+
+
+            /*
+                =================================
+                通常
+                =================================
+            */
+
+            else {
+
+                playMechanicalBeep(
+                    450,
+                    0.12
+                );
+            }
+
+        }, 1000);
+}
+
+
+/* =========================================
+   カウントダウン音停止
+========================================= */
+
+function stopCountdownSound() {
+
+    if (
+        countdownInterval !== null
+    ) {
+
+        clearInterval(
+            countdownInterval
+        );
+
+        countdownInterval = null;
+    }
+}
+
+
+/* =========================================
+   成功音
+========================================= */
+
+function playSuccessSound() {
+
+    if (!audioContext) {
+
+        return;
+    }
+
+
+    /*
+        上昇する3音
+    */
+
+    playTone(
+        523,
+        0.15,
+        0.0
     );
 
 
-    /* =========================
-       解除成功
-    ========================= */
+    playTone(
+        659,
+        0.15,
+        0.16
+    );
 
-    function defuse() {
+
+    playTone(
+        784,
+        0.35,
+        0.32
+    );
+}
 
 
-        if (
-            state !== "running"
-        ) {
+function playTone(
+    frequency,
+    duration,
+    delay
+) {
+
+    setTimeout(() => {
+
+        if (!audioContext) {
 
             return;
         }
 
 
-        state =
-            "success";
+        const oscillator =
+            audioContext.createOscillator();
 
 
-        clearInterval(
-            timer
+        const gain =
+            audioContext.createGain();
+
+
+        oscillator.type =
+            "sine";
+
+
+        oscillator.frequency.value =
+            frequency;
+
+
+        gain.gain.setValueAtTime(
+            0.0001,
+            audioContext.currentTime
         );
 
 
-        /*
-            成功画面
-        */
-
-        resultElement.style.display =
-            "flex";
-
-
-        resultElement.className =
-            "success";
-
-
-        resultTextElement.textContent =
-            "解除成功";
-
-
-        /*
-            入力欄から
-            フォーカスを外す
-        */
-
-        answerElement.blur();
-    }
-
-
-    /* =========================
-       爆発
-    ========================= */
-
-    function explode() {
-
-
-        if (
-            state !== "running"
-        ) {
-
-            return;
-        }
-
-
-        state =
-            "exploded";
-
-
-        /*
-            爆発画面
-        */
-
-        resultElement.style.display =
-            "flex";
-
-
-        resultElement.className =
-            "explosion";
-
-
-        resultTextElement.textContent =
-            "爆発";
-    }
-
-
-    /* =========================
-       リセット
-    ========================= */
-
-    function resetGame() {
-
-
-        /*
-            成功または爆発時だけ
-            リセット可能
-        */
-
-        if (
-            state !== "success" &&
-            state !== "exploded"
-        ) {
-
-            return;
-        }
-
-
-        clearInterval(
-            timer
+        gain.gain.exponentialRampToValueAtTime(
+            0.2,
+            audioContext.currentTime + 0.02
         );
 
 
-        /*
-            初期状態へ
-        */
-
-        timeLeft =
-            START_TIME;
+        gain.gain.exponentialRampToValueAtTime(
+            0.0001,
+            audioContext.currentTime + duration
+        );
 
 
-        state =
-            "waiting";
+        oscillator.connect(gain);
+
+        gain.connect(
+            audioContext.destination
+        );
 
 
-        startTime =
-            null;
+        oscillator.start();
 
 
-        /*
-            タイマー表示を戻す
-        */
+        oscillator.stop(
+            audioContext.currentTime
+            + duration
+        );
 
-        updateTimer();
-
-
-        /*
-            入力欄を空にする
-        */
-
-        answerElement.value =
-            "";
+    }, delay * 1000);
+}
 
 
-        /*
-            警告表示を解除
-        */
+/* =========================================
+   爆発音
+========================================= */
+
+function playExplosionSound() {
+
+    if (!audioContext) {
+
+        return;
+    }
+
+
+    const now =
+        audioContext.currentTime;
+
+
+    /*
+        爆発のノイズ
+    */
+
+    const bufferSize =
+        audioContext.sampleRate
+        * 1.2;
+
+
+    const buffer =
+        audioContext.createBuffer(
+            1,
+            bufferSize,
+            audioContext.sampleRate
+        );
+
+
+    const data =
+        buffer.getChannelData(0);
+
+
+    for (
+        let i = 0;
+        i < bufferSize;
+        i++
+    ) {
+
+        data[i] =
+            Math.random() * 2 - 1;
+    }
+
+
+    const noise =
+        audioContext.createBufferSource();
+
+
+    noise.buffer =
+        buffer;
+
+
+    /*
+        ローパスフィルター
+    */
+
+    const filter =
+        audioContext.createBiquadFilter();
+
+
+    filter.type =
+        "lowpass";
+
+
+    filter.frequency.setValueAtTime(
+        1500,
+        now
+    );
+
+
+    filter.frequency.exponentialRampToValueAtTime(
+        80,
+        now + 1
+    );
+
+
+    /*
+        音量
+    */
+
+    const gain =
+        audioContext.createGain();
+
+
+    gain.gain.setValueAtTime(
+        0.9,
+        now
+    );
+
+
+    gain.gain.exponentialRampToValueAtTime(
+        0.01,
+        now + 1
+    );
+
+
+    noise.connect(filter);
+
+    filter.connect(gain);
+
+    gain.connect(
+        audioContext.destination
+    );
+
+
+    noise.start(now);
+
+    noise.stop(
+        now + 1
+    );
+
+
+    /*
+        低い衝撃音
+    */
+
+    const oscillator =
+        audioContext.createOscillator();
+
+
+    const oscGain =
+        audioContext.createGain();
+
+
+    oscillator.type =
+        "sine";
+
+
+    oscillator.frequency.setValueAtTime(
+        100,
+        now
+    );
+
+
+    oscillator.frequency.exponentialRampToValueAtTime(
+        35,
+        now + 0.7
+    );
+
+
+    oscGain.gain.setValueAtTime(
+        0.8,
+        now
+    );
+
+
+    oscGain.gain.exponentialRampToValueAtTime(
+        0.01,
+        now + 0.7
+    );
+
+
+    oscillator.connect(
+        oscGain
+    );
+
+
+    oscGain.connect(
+        audioContext.destination
+    );
+
+
+    oscillator.start(now);
+
+    oscillator.stop(
+        now + 0.7
+    );
+}
+
+
+/* =========================================
+   タイマー表示
+========================================= */
+
+function updateTimer() {
+
+    /*
+        小数第2位まで表示
+    */
+
+    timerElement.textContent =
+        timeLeft.toFixed(2);
+
+
+    /*
+        残り20秒以下で警告
+    */
+
+    if (
+        timeLeft <= 20
+    ) {
+
+        timerElement.classList.add(
+            "warning"
+        );
+
+    } else {
 
         timerElement.classList.remove(
             "warning"
         );
+    }
+}
 
 
-        /*
-            結果画面を消す
-        */
+/* =========================================
+   成功時の光を生成
+========================================= */
 
-        resultElement.style.display =
-            "none";
+function createSuccessSparks() {
+
+    /*
+        光の粒を25個生成
+    */
+
+    for (
+        let i = 0;
+        i < 25;
+        i++
+    ) {
+
+        const spark =
+            document.createElement("div");
 
 
-        resultElement.className =
-            "";
+        spark.className =
+            "spark";
 
 
-        resultTextElement.textContent =
-            "";
+        const angle =
+            Math.random()
+            * Math.PI
+            * 2;
 
 
-        /*
-            フォーカスを外す
-        */
+        const distance =
+            100
+            +
+            Math.random() * 400;
 
-        answerElement.blur();
+
+        const x =
+            Math.cos(angle)
+            * distance;
+
+
+        const y =
+            Math.sin(angle)
+            * distance;
+
+
+        spark.style.setProperty(
+            "--x",
+            `${x}px`
+        );
+
+
+        spark.style.setProperty(
+            "--y",
+            `${y}px`
+        );
+
+
+        resultElement.appendChild(
+            spark
+        );
+
+
+        setTimeout(() => {
+
+            spark.remove();
+
+        }, 1600);
+    }
+}
+
+
+/* =========================================
+   ゲーム開始
+========================================= */
+
+function startGame() {
+
+    if (
+        state !== "waiting"
+    ) {
+
+        return;
     }
 
 
-    /* =========================
-       右上タップ
-    ========================= */
+    /*
+        タップ直後にAudioContextを開始
+    */
 
-    controlArea.addEventListener(
-        "pointerdown",
+    initAudio();
 
-        function (event) {
+
+    state =
+        "running";
+
+
+    startTime =
+        performance.now();
+
+
+    /*
+        入力欄にフォーカス
+    */
+
+    answerElement.focus();
+
+
+    /*
+        カウントダウン音開始
+    */
+
+    startCountdownSound();
+
+
+    /*
+        タイマー開始
+
+        10msごとに更新
+    */
+
+    timer =
+        setInterval(() => {
+
+
+            const elapsed =
+                (
+                    performance.now()
+                    -
+                    startTime
+                )
+                /
+                1000;
+
+
+            timeLeft =
+                Math.max(
+                    0,
+
+                    START_TIME
+                    -
+                    elapsed
+                );
+
+
+            updateTimer();
 
 
             /*
-                タップイベントが
-                他の場所に伝わるのを防ぐ
-            */
-
-            event.stopPropagation();
-
-
-            /*
-                開始前なら開始
+                0秒
             */
 
             if (
-                state === "waiting"
+                timeLeft <= 0
             ) {
 
-                startGame();
+                clearInterval(
+                    timer
+                );
 
-                return;
+
+                timeLeft =
+                    0;
+
+
+                updateTimer();
+
+
+                explode();
             }
 
+        }, 10);
+}
 
-            /*
-                成功・爆発後ならリセット
-            */
 
-            if (
-                state === "success" ||
-                state === "exploded"
-            ) {
+/* =========================================
+   正解判定
+========================================= */
 
-                resetGame();
+answerElement.addEventListener(
+    "input",
+    function () {
 
-                return;
-            }
+        if (
+            state !== "running"
+        ) {
 
+            return;
         }
+
+
+        const answer =
+            answerElement.value.trim();
+
+
+        /*
+            「だかい」と完全一致
+        */
+
+        if (
+            answer === ANSWER
+        ) {
+
+            defuse();
+        }
+    }
+);
+
+
+/* =========================================
+   解除成功
+========================================= */
+
+function defuse() {
+
+    if (
+        state !== "running"
+    ) {
+
+        return;
+    }
+
+
+    state =
+        "success";
+
+
+    /*
+        タイマー停止
+    */
+
+    clearInterval(
+        timer
     );
 
 
-    /* =========================
-       初期化
-    ========================= */
+    /*
+        カウントダウン音停止
+    */
+
+    stopCountdownSound();
+
+
+    /*
+        成功音
+    */
+
+    playSuccessSound();
+
+
+    /*
+        成功画面
+    */
+
+    resultElement.style.display =
+        "flex";
+
+
+    resultElement.className =
+        "success";
+
+
+    /*
+        「解除成功」は表示せず、
+        最初から
+        「爆弾解除成功」
+    */
+
+    resultTextElement.textContent =
+        "爆弾解除成功";
+
+
+    resultTextElement.style.opacity =
+        "1";
+
+
+    /*
+        最終メッセージは使用しない
+    */
+
+    finalMessageElement.textContent =
+        "";
+
+
+    finalMessageElement.style.opacity =
+        "0";
+
+
+    /*
+        光の粒
+    */
+
+    createSuccessSparks();
+
+
+    /*
+        入力欄からフォーカスを外す
+    */
+
+    answerElement.blur();
+}
+
+
+/* =========================================
+   爆発
+========================================= */
+
+function explode() {
+
+    if (
+        state !== "running"
+    ) {
+
+        return;
+    }
+
+
+    state =
+        "exploded";
+
+
+    /*
+        カウントダウン音停止
+    */
+
+    stopCountdownSound();
+
+
+    /*
+        爆発音
+    */
+
+    playExplosionSound();
+
+
+    /*
+        爆発画面
+    */
+
+    resultElement.style.display =
+        "flex";
+
+
+    resultElement.className =
+        "explosion shake";
+
+
+    /*
+        「爆発」という文字は
+        表示しない
+    */
+
+    resultTextElement.textContent =
+        "";
+
+
+    resultTextElement.style.opacity =
+        "0";
+
+
+    /*
+        最終メッセージも最初は非表示
+    */
+
+    finalMessageElement.textContent =
+        "";
+
+
+    finalMessageElement.style.opacity =
+        "0";
+
+
+    /*
+        入力欄からフォーカスを外す
+    */
+
+    answerElement.blur();
+
+
+    /*
+        爆発演出後に
+        「爆弾解除失敗」
+    */
+
+    setTimeout(() => {
+
+        showFinalMessage(
+            "爆弾解除失敗"
+        );
+
+    }, 1800);
+}
+
+
+/* =========================================
+   最終メッセージ
+========================================= */
+
+function showFinalMessage(
+    message
+) {
+
+    /*
+        爆発演出終了
+    */
+
+    resultTextElement.style.opacity =
+        "0";
+
+
+    finalMessageElement.textContent =
+        message;
+
+
+    /*
+        アニメーションをリセット
+    */
+
+    finalMessageElement.style.animation =
+        "none";
+
+
+    void finalMessageElement.offsetWidth;
+
+
+    /*
+        表示
+    */
+
+    finalMessageElement.style.animation =
+        "finalMessageAnimation 0.8s ease-out forwards";
+}
+
+
+/* =========================================
+   最終メッセージ用アニメーション
+========================================= */
+
+const finalStyle =
+document.createElement("style");
+
+
+finalStyle.textContent = `
+
+@keyframes finalMessageAnimation {
+
+    0% {
+
+        opacity: 0;
+
+        transform:
+            scale(0.7);
+    }
+
+    60% {
+
+        opacity: 1;
+
+        transform:
+            scale(1.08);
+    }
+
+    100% {
+
+        opacity: 1;
+
+        transform:
+            scale(1);
+    }
+}
+
+`;
+
+
+document.head.appendChild(
+    finalStyle
+);
+
+
+/* =========================================
+   右上タップ
+========================================= */
+
+controlArea.addEventListener(
+    "pointerdown",
+    function (event) {
+
+        /*
+            他の場所へイベントを伝えない
+        */
+
+        event.stopPropagation();
+
+
+        /*
+            待機中
+            → スタート
+        */
+
+        if (
+            state === "waiting"
+        ) {
+
+            startGame();
+
+            return;
+        }
+
+
+        /*
+            成功・爆発後
+            → リセット
+        */
+
+        if (
+            state === "success" ||
+            state === "exploded"
+        ) {
+
+            resetGame();
+
+            return;
+        }
+
+    }
+);
+
+
+/* =========================================
+   リセット
+========================================= */
+
+function resetGame() {
+
+    if (
+        state !== "success" &&
+        state !== "exploded"
+    ) {
+
+        return;
+    }
+
+
+    /*
+        タイマー停止
+    */
+
+    clearInterval(
+        timer
+    );
+
+
+    /*
+        カウントダウン音停止
+    */
+
+    stopCountdownSound();
+
+
+    /*
+        初期状態
+    */
+
+    timeLeft =
+        START_TIME;
+
+
+    state =
+        "waiting";
+
+
+    startTime =
+        null;
+
+
+    /*
+        タイマーを100.00に戻す
+    */
 
     updateTimer();
 
+
+    /*
+        入力欄を空にする
+    */
+
+    answerElement.value =
+        "";
+
+
+    /*
+        警告解除
+    */
+
+    timerElement.classList.remove(
+        "warning"
+    );
+
+
+    /*
+        結果画面を非表示
+    */
+
+    resultElement.style.display =
+        "none";
+
+
+    resultElement.className =
+        "";
+
+
+    /*
+        結果文字を消す
+    */
+
+    resultTextElement.textContent =
+        "";
+
+
+    /*
+        最終メッセージを消す
+    */
+
+    finalMessageElement.textContent =
+        "";
+
+
+    finalMessageElement.style.opacity =
+        "0";
+
+
+    /*
+        成功時の光の粒を削除
+    */
+
+    document
+        .querySelectorAll(".spark")
+        .forEach(
+            spark =>
+                spark.remove()
+        );
+
+
+    /*
+        フォーカスを外す
+    */
+
+    answerElement.blur();
+}
+
+
+/* =========================================
+   初期化
+========================================= */
+
+updateTimer();
+
 </script>
+
 
 </body>
 
